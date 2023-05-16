@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CartItem {
-  final UniqueKey id;
+  final String id;
   final String productId;
   final String name;
   final int quantity;
