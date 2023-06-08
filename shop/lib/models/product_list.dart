@@ -1,15 +1,10 @@
 import 'dart:convert';
-import 'dart:convert';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shop/exceptions/http_exception.dart';
-import '../utils/constants.dart';
-import 'package:http/http.dart' as http;
-import 'package:shop/exceptions/http_exception.dart';
-import '../utils/constants.dart';
-import 'product.dart';
+import 'package:shop/models/product.dart';
+import 'package:shop/utils/constants.dart';
 
 class ProductList with ChangeNotifier {
   final String _token;
@@ -18,7 +13,7 @@ class ProductList with ChangeNotifier {
 
   List<Product> get items => [..._items];
   List<Product> get favoriteItems =>
-      _items.where((element) => element.isFavorite).toList();
+      _items.where((prod) => prod.isFavorite).toList();
 
   ProductList([
     this._token = '',
@@ -36,17 +31,18 @@ class ProductList with ChangeNotifier {
     final response = await http.get(
       Uri.parse('${Constants.productBaseUrl}.json?auth=$_token'),
     );
+    if (response.body == 'null') return;
 
     final favResponse = await http.get(
-      Uri.parse('${Constants.userFavoritesUrl}/$_userId.json?auth=$_token'),
+      Uri.parse(
+        '${Constants.userFavoritesUrl}/$_userId.json?auth=$_token',
+      ),
     );
 
     Map<String, dynamic> favData =
         favResponse.body == 'null' ? {} : jsonDecode(favResponse.body);
 
-    if (response.body == 'null') return;
     Map<String, dynamic> data = jsonDecode(response.body);
-
     data.forEach((productId, productData) {
       final isFavorite = favData[productId] ?? false;
       _items.add(
@@ -65,6 +61,7 @@ class ProductList with ChangeNotifier {
 
   Future<void> saveProduct(Map<String, Object> data) {
     bool hasId = data['id'] != null;
+
     final product = Product(
       id: hasId ? data['id'] as String : Random().nextDouble().toString(),
       name: data['name'] as String,
@@ -75,32 +72,8 @@ class ProductList with ChangeNotifier {
 
     if (hasId) {
       return updateProduct(product);
-      return updateProduct(product);
     } else {
       return addProduct(product);
-      return addProduct(product);
-    }
-  }
-
-  Future<void> updateProduct(Product product) async {
-  Future<void> updateProduct(Product product) async {
-    int index = _items.indexWhere((element) => element.id == product.id);
-    if (index >= 0) {
-      await http.patch(
-        Uri.parse(
-            '${Constants.productBaseUrl}/${product.id}.json?auth=$_token'),
-        body: jsonEncode(
-          {
-            "name": product.name,
-            "description": product.description,
-            "price": product.price,
-            "imageUrl": product.imageUrl,
-          },
-        ),
-      );
-
-      _items[index] = product;
-      notifyListeners();
     }
   }
 
@@ -128,12 +101,35 @@ class ProductList with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateProduct(Product product) async {
+    int index = _items.indexWhere((p) => p.id == product.id);
+
+    if (index >= 0) {
+      await http.patch(
+        Uri.parse(
+            '${Constants.productBaseUrl}/${product.id}.json?auth=$_token'),
+        body: jsonEncode(
+          {
+            "name": product.name,
+            "description": product.description,
+            "price": product.price,
+            "imageUrl": product.imageUrl,
+          },
+        ),
+      );
+
+      _items[index] = product;
+      notifyListeners();
+    }
+  }
+
   Future<void> removeProduct(Product product) async {
-    int index = _items.indexWhere((element) => element.id == product.id);
+    int index = _items.indexWhere((p) => p.id == product.id);
 
     if (index >= 0) {
       final product = _items[index];
       _items.remove(product);
+      notifyListeners();
 
       final response = await http.delete(
         Uri.parse(
@@ -144,12 +140,10 @@ class ProductList with ChangeNotifier {
         _items.insert(index, product);
         notifyListeners();
         throw HttpException(
-          msg: "Não foi possível excluir o produto.",
+          msg: 'Não foi possível excluir o produto.',
           statusCode: response.statusCode,
         );
       }
     }
-
-    notifyListeners();
   }
 }
