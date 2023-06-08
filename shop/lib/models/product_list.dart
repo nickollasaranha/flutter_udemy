@@ -1,7 +1,11 @@
 import 'dart:convert';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shop/exceptions/http_exception.dart';
+import '../utils/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:shop/exceptions/http_exception.dart';
 import '../utils/constants.dart';
@@ -71,11 +75,14 @@ class ProductList with ChangeNotifier {
 
     if (hasId) {
       return updateProduct(product);
+      return updateProduct(product);
     } else {
+      return addProduct(product);
       return addProduct(product);
     }
   }
 
+  Future<void> updateProduct(Product product) async {
   Future<void> updateProduct(Product product) async {
     int index = _items.indexWhere((element) => element.id == product.id);
     if (index >= 0) {
