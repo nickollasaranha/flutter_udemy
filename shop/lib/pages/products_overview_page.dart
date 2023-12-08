@@ -37,7 +37,6 @@ class _ProductsOverviewPageState extends State<ProductsOverviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<ProductList>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Minha Loja'),

@@ -30,9 +30,6 @@ class Auth with ChangeNotifier {
     return isAuth ? _userId : null;
   }
 
-  static const _url =
-      'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyA03gtnUPQNhuBceyLXfgLLwxrItAefu4g';
-
   Future<void> _authenticate(
       String email, String password, String urlFragment) async {
     final url =
